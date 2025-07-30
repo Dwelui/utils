@@ -1,9 +1,9 @@
 {
-  "name": "@Dwelui/third-person-camera",
+  "name": "@Dwelui/utils",
   "version": "1.0.0",
   "private": false,
   "type": "module",
-  "description": "A reusable third-person camera controller for Three.js projects",
+  "description": "A reusable utils package for Three.js projects",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
