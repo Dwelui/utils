@@ -5,32 +5,30 @@ export default class RendererController {
     #camera: THREE.PerspectiveCamera;
     #scene: THREE.Scene;
     #renderer: THREE.WebGLRenderer;
-    #animationLoop: CallableFunction | null = null;
-    #targetFps: number = 30;
-    #previousFrameTime: number = 0;
+    #gameUpdateLoop: (delta: number) => void;
+
+    #targetFps: number | null = null;
+    #previousTime: number = 0;
 
     constructor(
         canvas: HTMLCanvasElement,
         camera: THREE.PerspectiveCamera,
-        scene: THREE.Scene
+        scene: THREE.Scene,
+        gameUpdateLoop: (delta: number) => void
     ) {
         this.#canvas = canvas;
         this.#camera = camera;
         this.#scene = scene;
 
         this.#renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+
+        this.#gameUpdateLoop = gameUpdateLoop;
     }
-
-    /**
-     * Set animation loop that will be called each game tick.
-     */
-    setAnimationLoop(animationLoop: CallableFunction) { this.#animationLoop = animationLoop; }
-
 
     /**
      * Set target fps for game tick target.
      *
-     * @param targetFps - Value must be positive. Default value is 30.
+     * @param targetFps - Value must be positive.
      *
      * @returns Returns false if range is not respected.
      */
@@ -44,19 +42,48 @@ export default class RendererController {
     }
 
     /**
-     * Start animation loop for ever browser animation tick.
+     * Start update loop.
      */
-    render = (currentFrameTime: number = 0) => {
-        const targetFrameDuration = 1 / this.#targetFps;
-        currentFrameTime *= 0.001; // in seconds.
+    render(): void {
+        requestAnimationFrame(this.#updateBrowserTick);
+    }
 
-        const realFrameDuration = currentFrameTime - this.#previousFrameTime;
-        if (realFrameDuration >= targetFrameDuration) {
-            this.#previousFrameTime = currentFrameTime;
-            this.#updateGameTick(realFrameDuration);
+    renderTest(): void {
+        this.#updateTick();
+    }
+
+    /**
+     * Updates ever browser animation tick.
+     */
+    #updateBrowserTick = (time: number = 0) => {
+        time *= 0.001; // in seconds.
+
+        let targetFrameDuration = 0;
+        if (this.#targetFps) targetFrameDuration = 1 / this.#targetFps;
+
+        const delta = time - this.#previousTime;
+
+        if (delta >= targetFrameDuration * 0.75) {
+            this.#previousTime = time;
+            this.#updateGameTick(delta);
         }
 
-        requestAnimationFrame(this.render);
+        requestAnimationFrame(this.#updateBrowserTick);
+    }
+
+    #updateTick = () => {
+        const time = performance.now() * 0.001; // in seconds.
+
+        let targetFrameDuration = 0;
+        if (this.#targetFps) {
+            targetFrameDuration = 1 / this.#targetFps;
+        }
+
+        const frameDuration = time - this.#previousTime;
+        if (frameDuration >= targetFrameDuration) {
+            this.#previousTime = time;
+            this.#updateGameTick(frameDuration);
+        }
     }
 
     /**
@@ -65,36 +92,26 @@ export default class RendererController {
      * @param delta - in seconds.
      */
     #updateGameTick(delta: number) {
-        if (this.#resizeRendererToDisplaySize()) {
-            this.#camera.aspect = this.#canvas.clientWidth / this.#canvas.clientHeight;
-            this.#camera.updateProjectionMatrix();
-        }
+        this.#resizeRendererToDisplaySize();
 
-        if (this.#animationLoop) {
-            this.#animationLoop(delta);
-        } else {
-            console.log(`WARNING::RendererController::Animation loop is not set.`);
-        }
+        this.#gameUpdateLoop(delta);
 
         this.#renderer.render(this.#scene, this.#camera);
     }
 
     /**
      * Resizes rendered canvas to be same as layout canvas.
-     *
-     * @returns Returns true if needed resizing.
      */
-    #resizeRendererToDisplaySize(): boolean {
-        const rendererCanvas = this.#renderer.domElement;
-        const needResize =
-            rendererCanvas.width !== this.#canvas.clientWidth ||
-            rendererCanvas.height !== this.#canvas.clientHeight
+    #resizeRendererToDisplaySize(): void {
+        const needsResize =
+            this.#canvas.width !== this.#canvas.clientWidth ||
+            this.#canvas.height !== this.#canvas.clientHeight
             ;
 
-        if (needResize) {
+        if (needsResize) {
             this.#renderer.setSize(this.#canvas.clientWidth, this.#canvas.clientHeight, false);
+            this.#camera.aspect = this.#canvas.clientWidth / this.#canvas.clientHeight;
+            this.#camera.updateProjectionMatrix();
         }
-
-        return needResize;
     }
 }

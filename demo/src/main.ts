@@ -17,16 +17,13 @@ const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
-const rendererInstance = new RendererController(canvas, camera, scene);
-rendererInstance.setTargetFps(60);
-
 const fpsCounterInstance = new FpsCounterController();
-
-rendererInstance.setAnimationLoop((delta: number) => {
+const rendererInstance = new RendererController(canvas, camera, scene, (delta: number) => {
     cube.rotation.x += delta;
     cube.rotation.z += delta;
 
     fpsCounterInstance.update(delta);
 });
 
+rendererInstance.setTargetFps(90);
 rendererInstance.render();
