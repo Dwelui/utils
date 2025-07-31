@@ -48,10 +48,6 @@ export default class RendererController {
         requestAnimationFrame(this.#updateBrowserTick);
     }
 
-    renderTest(): void {
-        this.#updateTick();
-    }
-
     /**
      * Updates ever browser animation tick.
      */
@@ -69,21 +65,6 @@ export default class RendererController {
         }
 
         requestAnimationFrame(this.#updateBrowserTick);
-    }
-
-    #updateTick = () => {
-        const time = performance.now() * 0.001; // in seconds.
-
-        let targetFrameDuration = 0;
-        if (this.#targetFps) {
-            targetFrameDuration = 1 / this.#targetFps;
-        }
-
-        const frameDuration = time - this.#previousTime;
-        if (frameDuration >= targetFrameDuration) {
-            this.#previousTime = time;
-            this.#updateGameTick(frameDuration);
-        }
     }
 
     /**
