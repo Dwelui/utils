@@ -3,3 +3,4 @@ export * from './FpsCounterComponent';
 
 export * from './RendererController';
 
+export { sharedState } from './StateManager';

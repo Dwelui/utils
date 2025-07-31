@@ -1,4 +1,4 @@
-// import { sharedState } from "../../sharedState.ts";
+import { sharedState } from "./StateManager";
 
 export default class FpsCounterController {
     #maxSamplesCount: number = 60;
@@ -40,9 +40,8 @@ export default class FpsCounterController {
         const avgFps = this.#fpsSamples.reduce((a, b) => a + b) / this.#fpsSamples.length;
 
         const roundedAvgFps = Math.round(avgFps);
-        console.log(roundedAvgFps);
-        // if (sharedState.fps !== roundedAvgFps) {
-        //     sharedState.fps = roundedAvgFps;
-        // }
+        if (sharedState.avgFps !== roundedAvgFps) {
+            sharedState.avgFps = roundedAvgFps;
+        }
     }
 }

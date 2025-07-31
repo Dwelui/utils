@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import RendererController from '../../module/RendererController';
 import FpsCounterController from '../../module/FpsCounterController';
+import FpsCounterComponent from '../../module/FpsCounterComponent';
+
+FpsCounterComponent.register();
 
 const canvas = document.querySelector('#main-canvas');
 if (!(canvas instanceof HTMLCanvasElement)) {
@@ -25,5 +28,4 @@ const rendererInstance = new RendererController(canvas, camera, scene, (delta: n
     fpsCounterInstance.update(delta);
 });
 
-rendererInstance.setTargetFps(90);
 rendererInstance.render();
